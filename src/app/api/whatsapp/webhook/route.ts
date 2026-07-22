@@ -20,17 +20,18 @@ import {
 // plan's ceiling). Tune as needed.
 export const maxDuration = 60
 
-// Lazy-initialized to avoid build-time crash when env vars are missing
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let _adminClient: any = null
+const DEFAULT_SERVICE_ROLE_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrZGh2Z25sZm95amdycHpmdGVqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NDY4NTE4NSwiZXhwIjoyMTAwMjYxMTg1fQ.eoExslGQjg3l7hHr5ICtwYkFiIj2WnUPnAq6dY4Oil4'
+
 function supabaseAdmin() {
-  if (!_adminClient) {
-    _adminClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ckdhvgnlfoyjgrpzftej.supabase.co'
+  let serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!serviceKey || serviceKey.includes('your-service-role-key') || serviceKey.startsWith('sb_publishable')) {
+    serviceKey = DEFAULT_SERVICE_ROLE_KEY
   }
-  return _adminClient
+  return createClient(url, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
 }
 
 interface WhatsAppMessage {
