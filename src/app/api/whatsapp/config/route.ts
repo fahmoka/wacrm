@@ -39,11 +39,8 @@ const DEFAULT_SERVICE_ROLE_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrZGh2Z25sZm95amdycHpmdGVqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NDY4NTE4NSwiZXhwIjoyMTAwMjYxMTg1fQ.eoExslGQjg3l7hHr5ICtwYkFiIj2WnUPnAq6dY4Oil4'
 
 function supabaseAdmin() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ckdhvgnlfoyjgrpzftej.supabase.co'
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.SUPABASE_SERVICE_ROLE_KEY.startsWith('eyJ')
-    ? process.env.SUPABASE_SERVICE_ROLE_KEY
-    : DEFAULT_SERVICE_ROLE_KEY
-  return createAdminClient(url, serviceKey, {
+  const url = 'https://ckdhvgnlfoyjgrpzftej.supabase.co'
+  return createAdminClient(url, DEFAULT_SERVICE_ROLE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
 }
