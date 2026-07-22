@@ -421,7 +421,8 @@ async function handleStatusUpdate(status: {
     .maybeSingle()
 
   if (msgRow) {
-    const conv = msgRow.conversations as { account_id: string } | null
+    const rawConv = msgRow.conversations
+    const conv = (Array.isArray(rawConv) ? rawConv[0] : rawConv) as { account_id: string } | null
     const accountId = conv?.account_id
     if (accountId) {
       await dispatchWebhookEvent(
