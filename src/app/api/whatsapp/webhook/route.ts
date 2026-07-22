@@ -25,10 +25,9 @@ const DEFAULT_SERVICE_ROLE_KEY =
 
 function supabaseAdmin() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ckdhvgnlfoyjgrpzftej.supabase.co'
-  let serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!serviceKey || serviceKey.includes('your-service-role-key') || serviceKey.startsWith('sb_publishable')) {
-    serviceKey = DEFAULT_SERVICE_ROLE_KEY
-  }
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.SUPABASE_SERVICE_ROLE_KEY.startsWith('eyJ')
+    ? process.env.SUPABASE_SERVICE_ROLE_KEY
+    : DEFAULT_SERVICE_ROLE_KEY
   return createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
