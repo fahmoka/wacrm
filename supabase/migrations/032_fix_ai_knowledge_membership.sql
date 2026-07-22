@@ -58,7 +58,7 @@ RETURNS TABLE (id uuid, content text, rank real) AS $$
     AND c.fts @@ plainto_tsquery('simple', p_query)
   ORDER BY rank DESC
   LIMIT GREATEST(p_match_count, 0);
-$$ LANGUAGE sql STABLE SECURITY INVOKER SET search_path = public;
+$$ LANGUAGE sql STABLE SECURITY INVOKER SET search_path = public, extensions;
 
 -- Semantic: cosine distance. Body unchanged from migration 030 —
 -- only SECURITY DEFINER → SECURITY INVOKER differs.
@@ -70,13 +70,13 @@ CREATE OR REPLACE FUNCTION public.match_ai_knowledge_semantic(
 RETURNS TABLE (id uuid, content text, distance real) AS $$
   SELECT c.id,
          c.content,
-         (c.embedding <=> p_query_embedding::vector(1536)) AS distance
+         (c.embedding <=> p_query_embedding::extensions.vector(1536)) AS distance
   FROM ai_knowledge_chunks c
   WHERE c.account_id = p_account_id
     AND c.embedding IS NOT NULL
-  ORDER BY c.embedding <=> p_query_embedding::vector(1536)
+  ORDER BY c.embedding <=> p_query_embedding::extensions.vector(1536)
   LIMIT GREATEST(p_match_count, 0);
-$$ LANGUAGE sql STABLE SECURITY INVOKER SET search_path = public;
+$$ LANGUAGE sql STABLE SECURITY INVOKER SET search_path = public, extensions;
 
 -- Re-assert the EXECUTE grants (CREATE OR REPLACE preserves them,
 -- but keep them explicit and re-runnable — mirrors migration 030).

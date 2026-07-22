@@ -30,7 +30,8 @@
 -- Idempotent — safe to run multiple times.
 -- ============================================================
 
-CREATE EXTENSION IF NOT EXISTS vector;
+SET search_path TO public, extensions;
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA extensions;
 
 -- Optional embeddings key (OpenAI-compatible). When set, the KB is
 -- embedded and semantic search turns on. Stored AES-256-GCM-encrypted,
@@ -104,7 +105,7 @@ CREATE TABLE IF NOT EXISTS ai_knowledge_chunks (
   -- follow-up; accounts wanting paraphrase/morphology matching add an
   -- embeddings key for the semantic path.)
   fts          tsvector GENERATED ALWAYS AS (to_tsvector('simple', content)) STORED,
-  embedding    vector(1536),
+  embedding    extensions.vector(1536),
   created_at   timestamptz NOT NULL DEFAULT now()
 );
 
@@ -166,7 +167,7 @@ RETURNS TABLE (id uuid, content text, rank real) AS $$
     AND c.fts @@ plainto_tsquery('simple', p_query)
   ORDER BY rank DESC
   LIMIT GREATEST(p_match_count, 0);
-$$ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public, extensions;
 
 -- Semantic: cosine distance against the query embedding. Only rows
 -- that actually have an embedding participate.
@@ -184,13 +185,13 @@ CREATE OR REPLACE FUNCTION public.match_ai_knowledge_semantic(
 RETURNS TABLE (id uuid, content text, distance real) AS $$
   SELECT c.id,
          c.content,
-         (c.embedding <=> p_query_embedding::vector(1536)) AS distance
+         (c.embedding <=> p_query_embedding::extensions.vector(1536)) AS distance
   FROM ai_knowledge_chunks c
   WHERE c.account_id = p_account_id
     AND c.embedding IS NOT NULL
-  ORDER BY c.embedding <=> p_query_embedding::vector(1536)
+  ORDER BY c.embedding <=> p_query_embedding::extensions.vector(1536)
   LIMIT GREATEST(p_match_count, 0);
-$$ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public, extensions;
 
 -- Lock down EXECUTE (mirrors migrations 018 / 025). These are
 -- SECURITY DEFINER and would otherwise default to PUBLIC — i.e. the
